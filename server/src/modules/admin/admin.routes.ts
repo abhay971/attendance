@@ -45,8 +45,8 @@ export async function adminRoutes(fastify: FastifyInstance) {
         success: true,
         data: result,
       });
-    } catch (error) {
-      fastify.log.error('Error getting employees:', error);
+    } catch (error: any) {
+      fastify.log.error(error);
       console.error('Full error:', error);
       return reply.status(500).send({
         success: false,

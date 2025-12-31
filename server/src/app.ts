@@ -46,7 +46,7 @@ export async function buildApp() {
   await fastify.register(adminRoutes, { prefix: '/api/admin' });
 
   // Global error handler
-  fastify.setErrorHandler((error, request, reply) => {
+  fastify.setErrorHandler((error: any, request, reply) => {
     fastify.log.error(error);
 
     const statusCode = error.statusCode || 500;

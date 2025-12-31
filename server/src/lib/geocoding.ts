@@ -27,7 +27,7 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Geocodin
       throw new Error(`Geocoding API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: any = await response.json();
     console.log('[Geocoding] Response:', data);
 
     if (!data.display_name) {
