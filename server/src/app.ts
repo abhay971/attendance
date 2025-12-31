@@ -30,6 +30,9 @@ export async function buildApp() {
   await fastify.register(cors, {
     origin: config.cors.origin,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['set-cookie'],
   });
 
   // Cookie parser
