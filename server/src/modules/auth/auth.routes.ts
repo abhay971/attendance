@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { authService } from './auth.service.js';
-import { loginSchema } from './auth.schema.js';
+import { loginSchema, changePasswordSchema } from './auth.schema.js';
 import { authenticate } from '../../middlewares/authenticate.js';
 import { config } from '../../config/index.js';
 
@@ -105,6 +105,26 @@ export async function authRoutes(fastify: FastifyInstance) {
         success: false,
         error: 'Not Found',
         message: 'User not found',
+      });
+    }
+  });
+
+  // Change password
+  fastify.put('/change-password', { preHandler: [authenticate] }, async (request, reply) => {
+    try {
+      const body = changePasswordSchema.parse(request.body);
+      const result = await authService.changePassword(request.user!.userId, body);
+
+      return reply.send({
+        success: true,
+        message: result.message,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to change password';
+      return reply.status(400).send({
+        success: false,
+        error: 'Bad Request',
+        message,
       });
     }
   });

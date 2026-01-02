@@ -1,7 +1,7 @@
 import { prisma } from '../../lib/prisma.js';
 import { hashPassword, verifyPassword } from '../../utils/password.js';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../../utils/jwt.js';
-import { LoginInput } from './auth.schema.js';
+import { LoginInput, ChangePasswordInput } from './auth.schema.js';
 
 export class AuthService {
   async login(input: LoginInput) {
@@ -140,6 +140,38 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async changePassword(userId: string, input: ChangePasswordInput) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        password: true,
+      },
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Verify current password
+    const isValidPassword = await verifyPassword(input.currentPassword, user.password);
+
+    if (!isValidPassword) {
+      throw new Error('Current password is incorrect');
+    }
+
+    // Hash new password
+    const hashedPassword = await hashPassword(input.newPassword);
+
+    // Update password
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    return { message: 'Password changed successfully' };
   }
 }
 

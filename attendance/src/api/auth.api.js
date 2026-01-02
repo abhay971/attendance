@@ -20,4 +20,9 @@ export const authApi = {
     const response = await api.get('/auth/me');
     return response.data.data;
   },
+
+  changePassword: async (currentPassword, newPassword) => {
+    const response = await api.put('/auth/change-password', { currentPassword, newPassword });
+    return response.data;
+  },
 };
