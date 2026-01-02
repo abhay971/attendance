@@ -190,6 +190,37 @@ export class AdminService {
     return { message: 'Employee deactivated successfully' };
   }
 
+  async permanentlyDeleteEmployee(id: string) {
+    const employee = await prisma.user.findUnique({ where: { id } });
+
+    if (!employee) {
+      throw new Error('Employee not found');
+    }
+
+    if (employee.role === 'ADMIN') {
+      // Count total admins
+      const adminCount = await prisma.user.count({
+        where: { role: 'ADMIN', isActive: true },
+      });
+
+      if (adminCount <= 1) {
+        throw new Error('Cannot delete the last admin user');
+      }
+    }
+
+    // Delete related data first (foreign key constraints)
+    await prisma.$transaction([
+      // Delete all attendance records
+      prisma.attendance.deleteMany({ where: { userId: id } }),
+      // Delete all refresh tokens
+      prisma.refreshToken.deleteMany({ where: { userId: id } }),
+      // Finally delete the user
+      prisma.user.delete({ where: { id } }),
+    ]);
+
+    return { message: 'Employee permanently deleted' };
+  }
+
   async getAllAttendance(query: AttendanceQuery) {
     const { page, limit, userId, startDate, endDate, status } = query;
     const skip = (page - 1) * limit;

@@ -13,9 +13,10 @@ export function Button({
     primary: 'bg-orange-400 hover:bg-orange-500 text-white focus:ring-orange-400',
     secondary: 'bg-blue-400 hover:bg-blue-500 text-white focus:ring-blue-400',
     success: 'bg-green-400 hover:bg-green-500 text-white focus:ring-green-400',
+    warning: 'bg-orange-500 hover:bg-orange-600 text-white focus:ring-orange-500',
     outline: 'border-2 border-orange-400 text-orange-400 hover:bg-orange-50 focus:ring-orange-400',
     ghost: 'text-gray-600 hover:bg-gray-100 focus:ring-gray-400',
-    danger: 'bg-red-500 hover:bg-red-600 text-white focus:ring-red-500',
+    danger: 'bg-gray-900 hover:bg-black text-white focus:ring-gray-900',
   };
 
   const sizes = {

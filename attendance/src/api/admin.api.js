@@ -27,6 +27,11 @@ export const adminApi = {
     return response.data;
   },
 
+  permanentlyDeleteEmployee: async (id) => {
+    const response = await api.delete(`/admin/employees/${id}/permanent`);
+    return response.data;
+  },
+
   // Attendance
   getAllAttendance: async (params = {}) => {
     const response = await api.get('/admin/attendance', { params });

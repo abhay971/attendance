@@ -100,6 +100,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   });
 
   // Delete (deactivate) employee
+  // Deactivate employee (soft delete)
   fastify.delete('/employees/:id', async (request, reply) => {
     try {
       const { id } = request.params as { id: string };
@@ -111,6 +112,26 @@ export async function adminRoutes(fastify: FastifyInstance) {
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to delete employee';
+      return reply.status(400).send({
+        success: false,
+        error: 'Bad Request',
+        message,
+      });
+    }
+  });
+
+  // Permanently delete employee (hard delete)
+  fastify.delete('/employees/:id/permanent', async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+      const result = await adminService.permanentlyDeleteEmployee(id);
+
+      return reply.send({
+        success: true,
+        message: result.message,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to permanently delete employee';
       return reply.status(400).send({
         success: false,
         error: 'Bad Request',

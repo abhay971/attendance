@@ -50,7 +50,7 @@ export function AdminEmployeesPage() {
   };
 
   const handleDeleteEmployee = async (id) => {
-    if (!confirm('Are you sure you want to deactivate this employee?')) return;
+    if (!confirm('Are you sure you want to deactivate this employee?\n\nThey will be marked as inactive but their data will be preserved.')) return;
 
     try {
       await adminApi.deleteEmployee(id);
@@ -58,6 +58,21 @@ export function AdminEmployeesPage() {
       loadEmployees();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to deactivate employee');
+    }
+  };
+
+  const handlePermanentDelete = async (id) => {
+    if (!confirm('⚠️ PERMANENT DELETE ⚠️\n\nAre you ABSOLUTELY SURE you want to permanently delete this employee?\n\nThis will:\n- Delete the employee account\n- Delete ALL their attendance records\n- Delete ALL their data\n\nThis action CANNOT be undone!')) return;
+
+    // Double confirmation for safety
+    if (!confirm('Final confirmation: Type YES in your mind and click OK to proceed with PERMANENT deletion.')) return;
+
+    try {
+      await adminApi.permanentlyDeleteEmployee(id);
+      setSuccess('Employee permanently deleted');
+      loadEmployees();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to permanently delete employee');
     }
   };
 
@@ -140,10 +155,18 @@ export function AdminEmployeesPage() {
                       Edit
                     </Button>
                     {employee.isActive && (
-                      <Button size="sm" variant="danger" onClick={() => handleDeleteEmployee(employee.id)}>
+                      <Button size="sm" variant="warning" onClick={() => handleDeleteEmployee(employee.id)}>
                         Deactivate
                       </Button>
                     )}
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={() => handlePermanentDelete(employee.id)}
+                      title="Permanently delete this employee and all their data"
+                    >
+                      Delete
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -202,10 +225,18 @@ export function AdminEmployeesPage() {
                             Edit
                           </Button>
                           {employee.isActive && (
-                            <Button size="sm" variant="danger" onClick={() => handleDeleteEmployee(employee.id)}>
+                            <Button size="sm" variant="warning" onClick={() => handleDeleteEmployee(employee.id)}>
                               Deactivate
                             </Button>
                           )}
+                          <Button
+                            size="sm"
+                            variant="danger"
+                            onClick={() => handlePermanentDelete(employee.id)}
+                            title="Permanently delete this employee and all their data"
+                          >
+                            Delete
+                          </Button>
                         </div>
                       </td>
                     </tr>
