@@ -1,4 +1,4 @@
-import api from './axios';
+import api, { getRefreshToken } from './axios';
 
 export const authApi = {
   login: async (email, password) => {
@@ -7,12 +7,14 @@ export const authApi = {
   },
 
   refresh: async () => {
-    const response = await api.post('/auth/refresh');
+    const refreshToken = getRefreshToken();
+    const response = await api.post('/auth/refresh', { refreshToken });
     return response.data.data;
   },
 
   logout: async () => {
-    const response = await api.post('/auth/logout');
+    const refreshToken = getRefreshToken();
+    const response = await api.post('/auth/logout', { refreshToken });
     return response.data;
   },
 

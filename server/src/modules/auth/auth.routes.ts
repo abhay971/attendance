@@ -18,26 +18,12 @@ export async function authRoutes(fastify: FastifyInstance) {
       const body = loginSchema.parse(request.body);
       const result = await authService.login(body);
 
-      // Set refresh token as HTTP-only cookie
-      const cookieOptions: any = {
-        httpOnly: config.cookie.httpOnly,
-        secure: config.cookie.secure,
-        sameSite: config.cookie.sameSite,
-        path: config.cookie.path,
-        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
-      };
-
-      // Add partitioned attribute for iOS Safari compatibility
-      if (config.nodeEnv === 'production') {
-        cookieOptions.partitioned = true;
-      }
-
-      reply.setCookie('refreshToken', result.refreshToken, cookieOptions);
-
+      // Return both tokens in response body for client-side storage
       return reply.send({
         success: true,
         data: {
           accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
           user: result.user,
         },
       });
@@ -54,7 +40,8 @@ export async function authRoutes(fastify: FastifyInstance) {
   // Refresh token
   fastify.post('/refresh', async (request, reply) => {
     try {
-      const refreshToken = request.cookies.refreshToken;
+      const body = request.body as any;
+      const refreshToken = body?.refreshToken;
 
       if (!refreshToken) {
         return reply.status(401).send({
@@ -66,30 +53,14 @@ export async function authRoutes(fastify: FastifyInstance) {
 
       const result = await authService.refresh(refreshToken);
 
-      // Re-set the cookie to refresh expiry and help with iOS Safari
-      const cookieOptions: any = {
-        httpOnly: config.cookie.httpOnly,
-        secure: config.cookie.secure,
-        sameSite: config.cookie.sameSite,
-        path: config.cookie.path,
-        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
-      };
-
-      // Add partitioned attribute for iOS Safari compatibility
-      if (config.nodeEnv === 'production') {
-        cookieOptions.partitioned = true;
-      }
-
-      reply.setCookie('refreshToken', refreshToken, cookieOptions);
-
       return reply.send({
         success: true,
         data: {
           accessToken: result.accessToken,
+          refreshToken: refreshToken,
         },
       });
     } catch (error) {
-      reply.clearCookie('refreshToken', { path: '/' });
       return reply.status(401).send({
         success: false,
         error: 'Unauthorized',
@@ -100,13 +71,12 @@ export async function authRoutes(fastify: FastifyInstance) {
 
   // Logout
   fastify.post('/logout', async (request, reply) => {
-    const refreshToken = request.cookies.refreshToken;
+    const body = request.body as any;
+    const refreshToken = body?.refreshToken;
 
     if (refreshToken) {
       await authService.logout(refreshToken);
     }
-
-    reply.clearCookie('refreshToken', { path: '/' });
 
     return reply.send({
       success: true,

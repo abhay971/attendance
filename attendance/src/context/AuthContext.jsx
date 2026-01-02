@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authApi } from '../api/auth.api';
-import { setAccessToken } from '../api/axios';
+import { setAccessToken, setRefreshToken } from '../api/axios';
 
 const AuthContext = createContext(null);
 
@@ -11,6 +11,7 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (email, password) => {
     const response = await authApi.login(email, password);
     setAccessToken(response.accessToken);
+    setRefreshToken(response.refreshToken);
     setUser(response.user);
     return response;
   }, []);
@@ -22,6 +23,7 @@ export function AuthProvider({ children }) {
       // Ignore errors during logout
     }
     setAccessToken(null);
+    setRefreshToken(null);
     setUser(null);
   }, []);
 
@@ -29,24 +31,15 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // Add a small delay for iOS Safari cookie sync
-        await new Promise(resolve => setTimeout(resolve, 100));
-
         const refreshResponse = await authApi.refresh();
         setAccessToken(refreshResponse.accessToken);
+        setRefreshToken(refreshResponse.refreshToken);
         const userResponse = await authApi.getMe();
         setUser(userResponse);
       } catch (error) {
-        // iOS Safari retry: Sometimes needs a second attempt
-        try {
-          await new Promise(resolve => setTimeout(resolve, 300));
-          const refreshResponse = await authApi.refresh();
-          setAccessToken(refreshResponse.accessToken);
-          const userResponse = await authApi.getMe();
-          setUser(userResponse);
-        } catch (retryError) {
-          // Not logged in
-        }
+        // Not logged in or refresh token expired
+        setAccessToken(null);
+        setRefreshToken(null);
       } finally {
         setLoading(false);
       }
