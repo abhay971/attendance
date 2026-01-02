@@ -5,11 +5,11 @@ import { authenticate } from '../../middlewares/authenticate.js';
 import { config } from '../../config/index.js';
 
 export async function authRoutes(fastify: FastifyInstance) {
-  // Login - with stricter rate limiting
+  // Login - with rate limiting
   fastify.post('/login', {
     config: {
       rateLimit: {
-        max: 5, // max 5 login attempts
+        max: 30, // max 30 login attempts
         timeWindow: '15 minutes', // per 15 minutes
       },
     },
