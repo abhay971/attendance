@@ -205,10 +205,14 @@ export class AdminService {
     if (startDate || endDate) {
       where.checkInTime = {};
       if (startDate) {
-        where.checkInTime.gte = new Date(startDate);
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        where.checkInTime.gte = start;
       }
       if (endDate) {
-        where.checkInTime.lte = new Date(endDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // End of day
+        where.checkInTime.lte = end;
       }
     }
 
@@ -485,10 +489,14 @@ export class AdminService {
     if (query?.startDate || query?.endDate) {
       where.checkInTime = {};
       if (query.startDate) {
-        where.checkInTime.gte = new Date(query.startDate);
+        const start = new Date(query.startDate);
+        start.setHours(0, 0, 0, 0);
+        where.checkInTime.gte = start;
       }
       if (query.endDate) {
-        where.checkInTime.lte = new Date(query.endDate);
+        const end = new Date(query.endDate);
+        end.setHours(23, 59, 59, 999); // End of day
+        where.checkInTime.lte = end;
       }
     }
 
