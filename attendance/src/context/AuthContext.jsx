@@ -29,12 +29,24 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const initAuth = async () => {
       try {
+        // Add a small delay for iOS Safari cookie sync
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         const refreshResponse = await authApi.refresh();
         setAccessToken(refreshResponse.accessToken);
         const userResponse = await authApi.getMe();
         setUser(userResponse);
       } catch (error) {
-        // Not logged in
+        // iOS Safari retry: Sometimes needs a second attempt
+        try {
+          await new Promise(resolve => setTimeout(resolve, 300));
+          const refreshResponse = await authApi.refresh();
+          setAccessToken(refreshResponse.accessToken);
+          const userResponse = await authApi.getMe();
+          setUser(userResponse);
+        } catch (retryError) {
+          // Not logged in
+        }
       } finally {
         setLoading(false);
       }

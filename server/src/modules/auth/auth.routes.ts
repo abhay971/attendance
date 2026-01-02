@@ -19,13 +19,20 @@ export async function authRoutes(fastify: FastifyInstance) {
       const result = await authService.login(body);
 
       // Set refresh token as HTTP-only cookie
-      reply.setCookie('refreshToken', result.refreshToken, {
+      const cookieOptions: any = {
         httpOnly: config.cookie.httpOnly,
         secure: config.cookie.secure,
         sameSite: config.cookie.sameSite,
         path: config.cookie.path,
         maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
-      });
+      };
+
+      // Add partitioned attribute for iOS Safari compatibility
+      if (config.nodeEnv === 'production') {
+        cookieOptions.partitioned = true;
+      }
+
+      reply.setCookie('refreshToken', result.refreshToken, cookieOptions);
 
       return reply.send({
         success: true,
@@ -58,6 +65,22 @@ export async function authRoutes(fastify: FastifyInstance) {
       }
 
       const result = await authService.refresh(refreshToken);
+
+      // Re-set the cookie to refresh expiry and help with iOS Safari
+      const cookieOptions: any = {
+        httpOnly: config.cookie.httpOnly,
+        secure: config.cookie.secure,
+        sameSite: config.cookie.sameSite,
+        path: config.cookie.path,
+        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      };
+
+      // Add partitioned attribute for iOS Safari compatibility
+      if (config.nodeEnv === 'production') {
+        cookieOptions.partitioned = true;
+      }
+
+      reply.setCookie('refreshToken', refreshToken, cookieOptions);
 
       return reply.send({
         success: true,
